@@ -6,6 +6,8 @@ import com.jfjara.reactive.infrastucture.cache.repository.util.CacheInvoiceFacto
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 
@@ -17,7 +19,9 @@ public class FindAllInvoicesRepository implements FindAllInvoicesPort {
 
     @Override
     public Flux<Invoice> find() {
-        return Flux.fromIterable(factory.createInvoiceCollection())
+        return Mono.fromCallable(() -> factory.createInvoiceCollection())
+                .subscribeOn(Schedulers.parallel())
+                .flatMapMany(Flux::fromIterable)
                 .delayElements(Duration.ofSeconds(1));
     }
 

@@ -6,6 +6,7 @@ import com.jfjara.reactive.infrastucture.cache.repository.util.CacheInvoiceFacto
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Repository("findInvoiceByIdCacheRepository")
 public class FindInvoiceByIdCacheRepository implements FindInvoiceByIdPort {
@@ -15,7 +16,8 @@ public class FindInvoiceByIdCacheRepository implements FindInvoiceByIdPort {
 
     @Override
     public Mono<Invoice> find(final String id) {
-        return Mono.just(factory.createInvoice(id));
+        return Mono.fromCallable(() -> factory.createInvoice(id))
+                .subscribeOn(Schedulers.parallel());
     }
 
 }
